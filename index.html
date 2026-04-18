@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense &amp; Budget Visualizer</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+    onerror="window.__chartJsFailed = true; document.getElementById('chart-error').hidden = false;"
+  ></script>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <h1 class="app-title">Expense &amp; Budget Visualizer</h1>
+    <button id="theme-toggle" class="btn-icon" aria-label="Toggle theme" title="Toggle theme">
+      <!-- Icon updated by ThemeController: moon in light mode, sun in dark mode -->
+      <span id="theme-icon">🌙</span>
+    </button>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ===== LEFT COLUMN (form + chart on desktop) ===== -->
+    <section class="col-left">
+
+      <!-- Total Spent + Budget Input (shown at top on mobile) -->
+      <div class="card metric-card">
+        <div class="total-spent-wrapper">
+          <span class="metric-label">Total Spent</span>
+          <span id="total-spent" class="metric-value">$0.00</span>
+          <span id="budget-warning" class="budget-warning" hidden>⚠️ Over budget!</span>
+        </div>
+        <div class="budget-input-wrapper">
+          <label for="budget-input" class="input-label">Monthly Budget</label>
+          <div class="budget-row">
+            <input
+              id="budget-input"
+              type="number"
+              class="input-field"
+              placeholder="e.g. 500"
+              min="0.01"
+              step="0.01"
+              aria-label="Monthly budget limit"
+            />
+            <button id="budget-save" class="btn btn-secondary">Set</button>
+          </div>
+          <span id="budget-error" class="field-error" hidden></span>
+        </div>
+      </div>
+
+      <!-- Doughnut Chart -->
+      <div class="card chart-card">
+        <div class="chart-container">
+          <canvas id="spending-chart" aria-label="Spending by category doughnut chart" role="img"></canvas>
+          <p id="chart-error" class="chart-error" hidden>
+            Chart unavailable. Please check your internet connection.
+          </p>
+        </div>
+      </div>
+
+      <!-- Expense Entry Form -->
+      <div class="card form-card">
+        <h2 class="card-title">Add Expense</h2>
+        <form id="expense-form" novalidate>
+
+          <div class="form-group">
+            <label for="item-name" class="input-label">Item Name</label>
+            <input
+              id="item-name"
+              type="text"
+              class="input-field"
+              placeholder="e.g. Coffee"
+              autocomplete="off"
+              aria-required="true"
+            />
+            <span id="name-error" class="field-error" hidden></span>
+          </div>
+
+          <div class="form-group">
+            <label for="item-amount" class="input-label">Amount ($)</label>
+            <input
+              id="item-amount"
+              type="number"
+              class="input-field"
+              placeholder="e.g. 4.50"
+              min="0.01"
+              step="0.01"
+              aria-required="true"
+            />
+            <span id="amount-error" class="field-error" hidden></span>
+          </div>
+
+          <div class="form-group">
+            <label for="item-category" class="input-label">Category</label>
+            <select id="item-category" class="input-field" aria-required="true">
+              <option value="">-- Select category --</option>
+              <!-- Populated by CategoryManager -->
+            </select>
+            <span id="category-error" class="field-error" hidden></span>
+          </div>
+
+          <!-- New category input (revealed when "Add New Category…" is selected) -->
+          <div id="new-category-wrapper" class="form-group" hidden>
+            <label for="new-category-name" class="input-label">New Category Name</label>
+            <div class="new-category-row">
+              <input
+                id="new-category-name"
+                type="text"
+                class="input-field"
+                placeholder="e.g. Healthcare"
+                autocomplete="off"
+              />
+              <button type="button" id="add-category-btn" class="btn btn-secondary">Add</button>
+            </div>
+            <span id="new-category-error" class="field-error" hidden></span>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full">Add Expense</button>
+        </form>
+      </div>
+
+    </section>
+
+    <!-- ===== RIGHT COLUMN (total + list on desktop) ===== -->
+    <section class="col-right">
+
+      <!-- Transaction List -->
+      <div class="card list-card">
+        <h2 class="card-title">Transactions</h2>
+
+        <!-- Sort + Filter controls -->
+        <div class="list-controls">
+          <div class="control-group">
+            <label for="sort-select" class="input-label">Sort by</label>
+            <select id="sort-select" class="input-field input-field--sm">
+              <option value="newest">Newest</option>
+              <option value="highest">Highest Amount</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="filter-select" class="input-label">Filter</label>
+            <select id="filter-select" class="input-field input-field--sm">
+              <option value="all">All</option>
+              <!-- Populated by CategoryManager -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Transaction cards rendered here -->
+        <ul id="transaction-list" class="transaction-list" aria-live="polite" aria-label="Transaction list">
+          <!-- Empty state shown by TransactionList when no transactions exist -->
+        </ul>
+      </div>
+
+      <!-- Monthly Summary -->
+      <div class="card summary-card">
+        <h2 class="card-title">Monthly Summary</h2>
+        <div id="monthly-summary-content">
+          <!-- Rendered by MonthlySummary module -->
+          <p id="no-budget-prompt" class="no-budget-prompt">
+            Set a budget limit above to track your monthly progress.
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Toast container (appended by ToastController) -->
+  <div id="toast-container" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
